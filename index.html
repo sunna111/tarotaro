@@ -11,15 +11,25 @@ body{font-family:Georgia,'Times New Roman',serif;background:linear-gradient(180d
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes cardAppear{from{transform:scale(.3) translateY(30px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
 @keyframes flipIn{from{transform:rotateY(90deg);opacity:0}to{transform:rotateY(0);opacity:1}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes fadeStagger{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 8px rgba(139,105,20,.1)}50%{box-shadow:0 0 20px rgba(139,105,20,.25)}}
 button,input,textarea{font-family:Georgia,'Times New Roman',serif}
 .screen{min-height:100vh;display:flex;flex-direction:column}
 .pick-card{width:42px;height:60px;border-radius:7px;cursor:pointer;background:linear-gradient(135deg,#3d2b1f,#5a3e2e,#3d2b1f);border:1.5px solid #8B6914;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:all .3s}
 .pick-card:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
 .pick-card.picked{background:#ece6da;border:1.5px dashed #c9a84c40;opacity:.2;cursor:default;box-shadow:none;transform:scale(.9)}
-.summary-card{background:#fff;border:1px solid #8B691415;border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.summary-card:hover{background:#faf6f0}
-.mode-btn{background:#fff;border:1px solid #8B691425;border-radius:16px;padding:20px 16px;cursor:pointer;text-align:center;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.04)}
-.mode-btn:hover{border-color:#8B691460;box-shadow:0 4px 20px rgba(139,105,20,.12);transform:translateY(-2px)}
+.summary-card{background:#fff;border:1px solid #8B691415;border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:all .2s}
+.summary-card:hover{background:#faf6f0;transform:translateY(-1px)}
+.mode-btn{background:#fff;border:1px solid #8B691425;border-radius:16px;padding:20px 16px;cursor:pointer;text-align:left;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.04);display:flex;align-items:center;gap:14px;animation:fadeStagger .5s ease both}
+.mode-btn:hover{border-color:#8B691460;box-shadow:0 4px 20px rgba(139,105,20,.15);transform:translateY(-2px)}
+.mode-btn .mode-icon{font-size:28px;min-width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#f5eedf;border-radius:12px;flex-shrink:0}
+.mode-btn .mode-text{flex:1}
+.mode-btn .mode-title{font-size:16px;color:#8B6914;font-weight:400;margin-bottom:3px}
+.mode-btn .mode-desc{font-size:11px;color:#9a8b78;line-height:1.5}
+.mode-btn .mode-tag{display:inline-block;font-size:10px;color:#c9a84c;background:#f5eedf;border-radius:4px;padding:1px 6px;margin-top:4px}
+.mode-btn-bottom{background:#fff;border:1px solid #8B691420;border-radius:14px;padding:14px;cursor:pointer;text-align:center;transition:all .3s;box-shadow:0 1px 8px rgba(0,0,0,.03);flex:1}
+.mode-btn-bottom:hover{border-color:#8B691450;box-shadow:0 3px 14px rgba(139,105,20,.1);transform:translateY(-1px)}
 .topbar{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #8B691415;background:#fff}
 .btn-back{background:none;border:1px solid #8B691440;color:#8B6914;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px}
 .btn-gold{background:linear-gradient(135deg,#c9a84c,#8B6914);color:#fff;border:none;border-radius:50px;cursor:pointer;box-shadow:0 4px 20px rgba(139,105,20,.2);letter-spacing:2px}
@@ -114,22 +124,32 @@ default:return homeHTML()
 function homeHTML(){
 var hist=getHist();
 return '<div class="screen" style="align-items:center;justify-content:center;padding:24px">'+
-'<div style="text-align:center;max-width:400px;width:100%">'+
+'<div style="text-align:center;max-width:420px;width:100%">'+
 '<div style="font-size:64px;margin-bottom:8px;animation:float 4s ease-in-out infinite">\ud83d\udd2e'+D+
 '<h1 style="font-size:36px;color:#8B6914;margin:0 0 6px;letter-spacing:4px;font-weight:400">TAROT'+H1+
-'<p style="font-size:13px;color:#9a8b78;margin:0 0 32px;letter-spacing:2px">\uce74\ub4dc\uac00 \ub2f9\uc2e0\uc5d0\uac8c \ub9d0\uc744 \uac78\uc5b4\uc635\ub2c8\ub2e4'+P+
-'<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">'+
-'<div class="mode-btn" id="modeDaily" style="background:linear-gradient(135deg,#fdf6e3,#f5eedf);border-color:#8B691440"><div style="font-size:28px;margin-bottom:4px">\u2600\ufe0f'+D+'<div style="font-size:18px;color:#8B6914;font-weight:400;margin-bottom:4px">\uc624\ub298\uc758 \uce74\ub4dc'+D+'<div style="font-size:12px;color:#9a8b78;line-height:1.5">\ud558\ub8e8\ub97c \uc5ec\ub294 \uba54\uc2dc\uc9c0 \xb7 \uba54\uc774\uc800 1\uc7a5'+D+D+
-'<div class="mode-btn" id="modeYN"><div style="font-size:28px;margin-bottom:4px">\u2728'+D+'<div style="font-size:18px;color:#8B6914;font-weight:400;margin-bottom:4px">Yes or No'+D+'<div style="font-size:12px;color:#9a8b78;line-height:1.5">\uac04\ub2e8\ud55c \uc9c8\ubb38 \xb7 \uba54\uc774\uc800 1~3\uc7a5'+D+D+
-'<div class="mode-btn" id="modeThree"><div style="font-size:28px;margin-bottom:4px">\ud83c\udf19'+D+'<div style="font-size:18px;color:#8B6914;font-weight:400;margin-bottom:4px">\uc138 \uc7a5 \uc2a4\ud504\ub808\ub4dc'+D+'<div style="font-size:12px;color:#9a8b78;line-height:1.5">\uacfc\uac70 \xb7 \ud604\uc7ac \xb7 \ubbf8\ub798 \xb7 \uba54\uc774\uc800 3\uc7a5'+D+D+
-'<div class="mode-btn" id="modeAlt"><div style="font-size:28px;margin-bottom:4px">\u2696\ufe0f'+D+'<div style="font-size:18px;color:#8B6914;font-weight:400;margin-bottom:4px">\uc591\uc790\ud0dd\uc77c'+D+'<div style="font-size:12px;color:#9a8b78;line-height:1.5">A vs B \uace0\ubbfc \xb7 \uac01 2\uc7a5\uc529 \uba54\uc774\uc800 4\uc7a5'+D+D+
-'<div class="mode-btn" id="modeCeltic"><div style="font-size:28px;margin-bottom:4px">\ud83c\udf1f'+D+'<div style="font-size:18px;color:#8B6914;font-weight:400;margin-bottom:4px">\ucf08\ud2f1 \ud06c\ub85c\uc2a4'+D+'<div style="font-size:12px;color:#9a8b78;line-height:1.5">\uc0c1\ud669 \uae4a\uc774 \ud0d0\uad6c \xb7 \uc804\uccb4 78\uc7a5\uc5d0\uc11c 10\uc7a5'+D+D+
+'<p style="font-size:13px;color:#9a8b78;margin:0 0 28px;letter-spacing:2px">\uce74\ub4dc\uac00 \ub2f9\uc2e0\uc5d0\uac8c \ub9d0\uc744 \uac78\uc5b4\uc635\ub2c8\ub2e4'+P+
+
+'<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">'+
+
+'<div class="mode-btn" id="modeDaily" style="background:linear-gradient(135deg,#fdf6e3,#f5eedf);border-color:#8B691440;animation-delay:.05s"><div class="mode-icon">\u2600\ufe0f'+D+'<div class="mode-text"><div class="mode-title">\uc624\ub298\uc758 \uce74\ub4dc'+D+'<div class="mode-desc">\uc624\ub298 \ud558\ub8e8\ub97c \uc5ec\ub294 \uba54\uc2dc\uc9c0\ub97c \ubc1b\uc544\ubcf4\uc138\uc694'+D+'<div class="mode-tag">\ud558\ub8e8 1\uc7a5 \xb7 \uba54\uc774\uc800'+D+D+D+
+
+'<div class="mode-btn" id="modeYN" style="animation-delay:.1s"><div class="mode-icon">\u2728'+D+'<div class="mode-text"><div class="mode-title">Yes or No'+D+'<div class="mode-desc">\u201c\uc774\uc9c1\ud574\uc57c \ud560\uae4c?\u201d \u201c\uace0\ubc31\ud560\uae4c?\u201d \uac04\ub2e8\ud55c \uc9c8\ubb38\uc5d0 \ub2f5\uc744 \uc904\uc5b4\uc694'+D+'<div class="mode-tag">1~3\uc7a5 \xb7 \uba54\uc774\uc800'+D+D+D+
+
+'<div class="mode-btn" id="modeCeltic" style="animation-delay:.15s;background:linear-gradient(135deg,#fff,#f9f3e8);border-color:#8B691440"><div class="mode-icon" style="background:linear-gradient(135deg,#8B6914,#c9a84c);font-size:24px">\ud83c\udf1f'+D+'<div class="mode-text"><div class="mode-title">\uc2ec\uce35 \ub9ac\ub529'+D+'<div class="mode-desc">\uc9c4\uc9c0\ud558\uac8c \uace0\ubbfc\ub418\ub294 \ubb38\uc81c\uac00 \uc788\uc744 \ub54c. 10\uc7a5\uc73c\ub85c \uc0c1\ud669\uc744 \ub2e4\uac01\ub3c4\ub85c \ud0d0\uad6c\ud558\uace0, \ucd94\uac00 \uc9c8\ubb38\ub3c4 \uc774\uc5b4\uac08 \uc218 \uc788\uc5b4\uc694'+D+'<div class="mode-tag">\ucf08\ud2f1\ud06c\ub85c\uc2a4 10\uc7a5 \xb7 78\uc7a5 \uc804\uccb4 \xb7 \ucd94\uac00 \uc9c8\ubb38 \uac00\ub2a5'+D+D+D+
+
+'<div class="mode-btn" id="modeThree" style="animation-delay:.2s"><div class="mode-icon">\ud83c\udf19'+D+'<div class="mode-text"><div class="mode-title">\uc138 \uc7a5 \uc2a4\ud504\ub808\ub4dc'+D+'<div class="mode-desc">\uacfc\uac70\xb7\ud604\uc7ac\xb7\ubbf8\ub798\uc758 \ud750\ub984\uc744 \ud55c\ub208\uc5d0. \uc0c1\ud669\uc758 \ubcc0\ud654\ub97c \ubcf4\uace0 \uc2f6\uc744 \ub54c'+D+'<div class="mode-tag">3\uc7a5 \xb7 \uba54\uc774\uc800'+D+D+D+
+
+'<div class="mode-btn" id="modeAlt" style="animation-delay:.25s"><div class="mode-icon">\u2696\ufe0f'+D+'<div class="mode-text"><div class="mode-title">\uc591\uc790\ud0dd\uc77c'+D+'<div class="mode-desc">A\uc640 B \uc0ac\uc774\uc5d0\uc11c \uace0\ubbfc\uc911\uc774\ub77c\uba74! \uac01\uac01 2\uc7a5\uc529 \ubf51\uc544 \ube44\uad50\ud574\uc694'+D+'<div class="mode-tag">4\uc7a5 \xb7 \uba54\uc774\uc800'+D+D+D+
+
 D+
-'<div style="display:flex;gap:10px;margin-bottom:20px">'+
-'<div class="mode-btn" id="modeDict" style="flex:1;padding:14px 10px"><div style="font-size:22px;margin-bottom:4px">\ud83d\udcd6'+D+'<div style="font-size:14px;color:#8B6914">\uce74\ub4dc \uc0ac\uc804'+D+D+
-'<div class="mode-btn" id="modeHist" style="flex:1;padding:14px 10px"><div style="font-size:22px;margin-bottom:4px">\ud83d\udcdc'+D+'<div style="font-size:14px;color:#8B6914">\ub9ac\ub529 \uae30\ub85d'+(hist.length>0?' <span style="font-size:11px;color:#9a8b78">('+hist.length+')'+SP:'')+D+D+
+
+'<div style="display:flex;gap:10px;margin-bottom:20px;animation:fadeStagger .5s ease .3s both">'+
+'<div class="mode-btn-bottom" id="modeDict"><div style="font-size:22px;margin-bottom:4px">\ud83d\udcd6'+D+'<div style="font-size:13px;color:#8B6914;margin-bottom:2px">\uce74\ub4dc \uc0ac\uc804'+D+'<div style="font-size:10px;color:#9a8b78">22\uc7a5 \uc758\ubbf8 \ubcf4\uae30'+D+D+
+'<div class="mode-btn-bottom" id="modeHist"><div style="font-size:22px;margin-bottom:4px">\ud83d\udcdc'+D+'<div style="font-size:13px;color:#8B6914;margin-bottom:2px">\ub9ac\ub529 \uae30\ub85d'+D+'<div style="font-size:10px;color:#9a8b78">'+(hist.length>0?hist.length+'\uac1c \uc800\uc7a5\ub428':'\uc544\uc9c1 \uc5c6\uc74c')+D+D+
 D+
-'<p style="color:#9a8b7850;font-size:11px">\uacb0\uacfc\ub97c \ubcf5\uc0ac\ud574 Claude\uc5d0\uc11c \uc2ec\uce35 \ud574\uc11d\uc744 \ubc1b\uc744 \uc218 \uc788\uc5b4\uc694'+P+
+
+'<div style="background:#f5eedf60;border-radius:12px;padding:12px 16px;margin-bottom:12px;animation:fadeStagger .5s ease .35s both"><p style="color:#9a8b78;font-size:11px;margin:0;line-height:1.7">\ud83d\udca1 \uacb0\uacfc\ub97c \ubcf5\uc0ac\ud574\uc11c <a href="https://claude.ai" target="_blank" style="color:#8B6914">claude.ai'+A+'\uc5d0 \ubd99\uc5ec\ub123\uc73c\uba74<br>\uc0c1\ud669\uc5d0 \ub9de\ub294 \uc2ec\uce35 \ud574\uc11d\uc744 \ubc1b\uc744 \uc218 \uc788\uc5b4\uc694'+P+D+
+
 D+D
 }
 
