@@ -3,13 +3,15 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>🔮 타로 켈틱 크로스</title>
+<title>🔮 타로 리딩</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Georgia,'Times New Roman',serif;background:linear-gradient(180deg,#faf6f0,#efe8db);min-height:100vh;color:#3d3426}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes cardAppear{from{transform:scale(.3) translateY(30px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes flipIn{from{transform:rotateY(90deg);opacity:0}to{transform:rotateY(0);opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(139,105,20,.2)}50%{box-shadow:0 0 40px rgba(139,105,20,.4)}}
 button,input,textarea{font-family:Georgia,'Times New Roman',serif}
 .screen{min-height:100vh;display:flex;flex-direction:column}
 .pick-card{width:42px;height:60px;border-radius:7px;cursor:pointer;background:linear-gradient(135deg,#3d2b1f,#5a3e2e,#3d2b1f);border:1.5px solid #8B6914;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:all .3s}
@@ -17,38 +19,43 @@ button,input,textarea{font-family:Georgia,'Times New Roman',serif}
 .pick-card.picked{background:#ece6da;border:1.5px dashed #c9a84c40;opacity:.2;cursor:default;box-shadow:none;transform:scale(.9)}
 .summary-card{background:#fff;border:1px solid #8B691415;border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.04)}
 .summary-card:hover{background:#faf6f0}
+.mode-btn{background:#fff;border:1px solid #8B691425;border-radius:16px;padding:24px 20px;cursor:pointer;text-align:center;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.mode-btn:hover{border-color:#8B691460;box-shadow:0 4px 20px rgba(139,105,20,.12);transform:translateY(-2px)}
+.yn-card{cursor:pointer;transition:all .4s;border-radius:12px;background:linear-gradient(135deg,#3d2b1f,#5a3e2e,#3d2b1f);border:2px solid #8B6914;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.yn-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.yn-card.picked{pointer-events:none;opacity:.15;transform:scale(.9)}
+.yn-card.revealed{background:linear-gradient(180deg,#fdf6e3,#f5e6c8,#ede0c8);animation:flipIn .6s ease}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// Close tag helper to avoid breaking script
-var CT=function(tag){return "<"+"/"+tag+">"};
-var D=CT("div"),SP=CT("span"),P=CT("p"),H1=CT("h1"),BTN=CT("button"),INP=CT("input"),A=CT("a"),TA=CT("textarea");
+var CT=function(t){return "<"+"/"+t+">"};
+var D=CT("div"),SP=CT("span"),P=CT("p"),H1=CT("h1"),H2=CT("h2"),BTN=CT("button"),A=CT("a"),TA=CT("textarea");
 
 var MAJOR=[
-{name:"The Fool",kr:"\uad11\ub300",num:"0",sym:"\ud83c\udccf"},
-{name:"The Magician",kr:"\ub9c8\ubc95\uc0ac",num:"I",sym:"\ud83e\ude84"},
-{name:"The High Priestess",kr:"\uc5ec\uc0ac\uc81c",num:"II",sym:"\ud83c\udf19"},
-{name:"The Empress",kr:"\uc5ec\ud669\uc81c",num:"III",sym:"\ud83d\udc51"},
-{name:"The Emperor",kr:"\ud669\uc81c",num:"IV",sym:"\ud83c\udfdb\ufe0f"},
-{name:"The Hierophant",kr:"\uad50\ud669",num:"V",sym:"\u26ea"},
-{name:"The Lovers",kr:"\uc5f0\uc778",num:"VI",sym:"\ud83d\udc95"},
-{name:"The Chariot",kr:"\uc804\ucc28",num:"VII",sym:"\ud83c\udfc7"},
-{name:"Strength",kr:"\ud798",num:"VIII",sym:"\ud83e\udd81"},
-{name:"The Hermit",kr:"\uc740\ub458\uc790",num:"IX",sym:"\ud83c\udfd4\ufe0f"},
-{name:"Wheel of Fortune",kr:"\uc6b4\uba85\uc758 \uc218\ub808\ubc14\ud034",num:"X",sym:"\u2638\ufe0f"},
-{name:"Justice",kr:"\uc815\uc758",num:"XI",sym:"\u2696\ufe0f"},
-{name:"The Hanged Man",kr:"\ub9e4\ub2ec\ub9b0 \uc0ac\ub78c",num:"XII",sym:"\ud83d\ude43"},
-{name:"Death",kr:"\uc8fd\uc74c",num:"XIII",sym:"\ud83d\udc80"},
-{name:"Temperance",kr:"\uc808\uc81c",num:"XIV",sym:"\u23f3"},
-{name:"The Devil",kr:"\uc545\ub9c8",num:"XV",sym:"\ud83d\ude08"},
-{name:"The Tower",kr:"\ud0d1",num:"XVI",sym:"\ud83d\uddfc"},
-{name:"The Star",kr:"\ubcc4",num:"XVII",sym:"\u2b50"},
-{name:"The Moon",kr:"\ub2ec",num:"XVIII",sym:"\ud83c\udf15"},
-{name:"The Sun",kr:"\ud0dc\uc591",num:"XIX",sym:"\u2600\ufe0f"},
-{name:"Judgement",kr:"\uc2ec\ud310",num:"XX",sym:"\ud83d\udcef"},
-{name:"The World",kr:"\uc138\uacc4",num:"XXI",sym:"\ud83c\udf0d"}
+{name:"The Fool",kr:"\uad11\ub300",num:"0",sym:"\ud83c\udccf",yn:"yes",ynMsg:"\uc0c8\ub85c\uc6b4 \uc2dc\uc791\uc744 \ud5a5\ud574 \ub6f0\uc5b4\ub4e4\uc138\uc694!"},
+{name:"The Magician",kr:"\ub9c8\ubc95\uc0ac",num:"I",sym:"\ud83e\ude84",yn:"yes",ynMsg:"\ub2f9\uc2e0\uc5d0\uac8c \uadf8 \ub2a5\ub825\uc774 \uc788\uc2b5\ub2c8\ub2e4."},
+{name:"The High Priestess",kr:"\uc5ec\uc0ac\uc81c",num:"II",sym:"\ud83c\udf19",yn:"wait",ynMsg:"\uc9c1\uad00\uc744 \ub530\ub974\ub418, \uc870\uae08 \ub354 \uae30\ub2e4\ub9ac\uc138\uc694."},
+{name:"The Empress",kr:"\uc5ec\ud669\uc81c",num:"III",sym:"\ud83d\udc51",yn:"yes",ynMsg:"\ud48d\uc694\ub85c\uc6b4 \uacb0\uacfc\uac00 \uae30\ub2e4\ub9bd\ub2c8\ub2e4."},
+{name:"The Emperor",kr:"\ud669\uc81c",num:"IV",sym:"\ud83c\udfdb\ufe0f",yn:"yes",ynMsg:"\uad6c\uc870\uc640 \uacc4\ud68d\uc774 \uc131\uacf5\uc744 \uc774\ub055\ub2c8\ub2e4."},
+{name:"The Hierophant",kr:"\uad50\ud669",num:"V",sym:"\u26ea",yn:"yes",ynMsg:"\uc804\ud1b5\uc801\uc778 \ubc29\ubc95\uc744 \ub530\ub974\uc138\uc694."},
+{name:"The Lovers",kr:"\uc5f0\uc778",num:"VI",sym:"\ud83d\udc95",yn:"yes",ynMsg:"\ub9c8\uc74c\uc744 \ub530\ub974\uc138\uc694. \uc608\uc2a4!"},
+{name:"The Chariot",kr:"\uc804\ucc28",num:"VII",sym:"\ud83c\udfc7",yn:"yes",ynMsg:"\uac15\ud55c \uc758\uc9c0\ub85c \ubc00\uace0 \ub098\uac00\uc138\uc694!"},
+{name:"Strength",kr:"\ud798",num:"VIII",sym:"\ud83e\udd81",yn:"yes",ynMsg:"\uc778\ub0b4\uc2ec\uacfc \uc6a9\uae30\uac00 \ub2f5\uc785\ub2c8\ub2e4."},
+{name:"The Hermit",kr:"\uc740\ub458\uc790",num:"IX",sym:"\ud83c\udfd4\ufe0f",yn:"wait",ynMsg:"\ud63c\uc790\ub9cc\uc758 \uc2dc\uac04\uc774 \ud544\uc694\ud569\ub2c8\ub2e4."},
+{name:"Wheel of Fortune",kr:"\uc6b4\uba85\uc758 \uc218\ub808\ubc14\ud034",num:"X",sym:"\u2638\ufe0f",yn:"yes",ynMsg:"\uc6b4\uba85\uc774 \ub2f9\uc2e0 \ud3b8\uc785\ub2c8\ub2e4!"},
+{name:"Justice",kr:"\uc815\uc758",num:"XI",sym:"\u2696\ufe0f",yn:"yes",ynMsg:"\uacf5\uc815\ud55c \uacb0\uacfc\uac00 \ub9de\uc744 \uac83\uc785\ub2c8\ub2e4."},
+{name:"The Hanged Man",kr:"\ub9e4\ub2ec\ub9b0 \uc0ac\ub78c",num:"XII",sym:"\ud83d\ude43",yn:"wait",ynMsg:"\uad00\uc810\uc744 \ubc14\uafb8\uc5b4 \ubcf4\uc138\uc694."},
+{name:"Death",kr:"\uc8fd\uc74c",num:"XIII",sym:"\ud83d\udc80",yn:"no",ynMsg:"\ub05d\ub0b4\uace0 \uc0c8\ub85c \uc2dc\uc791\ud560 \ub54c\uc785\ub2c8\ub2e4."},
+{name:"Temperance",kr:"\uc808\uc81c",num:"XIV",sym:"\u23f3",yn:"wait",ynMsg:"\uade0\ud615\uacfc \uc778\ub0b4\uac00 \ud544\uc694\ud569\ub2c8\ub2e4."},
+{name:"The Devil",kr:"\uc545\ub9c8",num:"XV",sym:"\ud83d\ude08",yn:"no",ynMsg:"\uc720\ud639\uc5d0 \uc8fc\uc758\ud558\uc138\uc694. \uc544\ub2c8\uc624."},
+{name:"The Tower",kr:"\ud0d1",num:"XVI",sym:"\ud83d\uddfc",yn:"no",ynMsg:"\uc608\uc0c1\uce58 \ubabb\ud55c \ubcc0\ud654\uac00 \uc635\ub2c8\ub2e4."},
+{name:"The Star",kr:"\ubcc4",num:"XVII",sym:"\u2b50",yn:"yes",ynMsg:"\ud76c\ub9dd\uc744 \uac00\uc9c0\uc138\uc694. \ub2f5\uc740 \uc608\uc2a4!"},
+{name:"The Moon",kr:"\ub2ec",num:"XVIII",sym:"\ud83c\udf15",yn:"no",ynMsg:"\ubd88\ud655\uc2e4\ud568\uc774 \ub9ce\uc2b5\ub2c8\ub2e4. \uc544\uc9c1 \uc544\ub2c8\uc694."},
+{name:"The Sun",kr:"\ud0dc\uc591",num:"XIX",sym:"\u2600\ufe0f",yn:"yes",ynMsg:"\ud655\uc2e4\ud55c \uc608\uc2a4! \ubc1d\uc740 \ubbf8\ub798\uc785\ub2c8\ub2e4."},
+{name:"Judgement",kr:"\uc2ec\ud310",num:"XX",sym:"\ud83d\udcef",yn:"yes",ynMsg:"\uacb0\ub2e8\uc758 \uc2dc\uac04\uc785\ub2c8\ub2e4. \uc608\uc2a4."},
+{name:"The World",kr:"\uc138\uacc4",num:"XXI",sym:"\ud83c\udf0d",yn:"yes",ynMsg:"\uc644\ubcbd\ud55c \uc608\uc2a4! \ubaa8\ub4e0 \uac83\uc774 \uc644\uc131\ub429\ub2c8\ub2e4."}
 ];
 var SUITS=[
 {name:"Wands",kr:"\uc644\ub4dc",sym:"\ud83e\udeb5",color:"#c0392b"},
@@ -77,34 +84,175 @@ var LP=[
 ];
 
 var DECK=[];
-MAJOR.forEach(function(m,i){DECK.push({type:"major",index:i,name:m.name,kr:m.kr,num:m.num,sym:m.sym})});
+MAJOR.forEach(function(m,i){DECK.push({type:"major",index:i,name:m.name,kr:m.kr,num:m.num,sym:m.sym,yn:m.yn,ynMsg:m.ynMsg})});
 SUITS.forEach(function(s){RANKS.forEach(function(r,ri){DECK.push({type:"minor",suit:s,rankIndex:ri,name:r+" of "+s.name,kr:s.kr+"\uc758 "+RANK_KR[ri],sym:s.sym,num:r})})});
+var MAJOR_DECK=DECK.filter(function(c){return c.type==="major"});
 
 function shuffle(a){var b=a.slice();for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t}return b}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/\x3c/g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 
-var S={screen:"intro",q:"",deck:[],picked:[],pickedCards:[],cards:[],flipped:[],sel:null,allRev:false,flipOrd:0,showTxt:false,copied:false,
-followUps:[],followIn:"",followMode:false,followCnt:1,followQ:"",followDeck:[],followPicked:[],followPI:[]};
+var S={screen:"home",mode:"",q:"",deck:[],picked:[],pickedCards:[],cards:[],flipped:[],sel:null,allRev:false,flipOrd:0,showTxt:false,copied:false,
+followUps:[],followIn:"",followMode:false,followCnt:1,followQ:"",followDeck:[],followPicked:[],followPI:[],
+ynCnt:1,ynDeck:[],ynPicked:[],ynPI:[],ynRevealed:[],ynDone:false};
 
-function render(){document.getElementById("app").innerHTML=S.screen==="intro"?introHTML():S.screen==="picking"?pickHTML():readHTML();bindAll()}
+function render(){
+var a=document.getElementById("app");
+if(S.screen==="home") a.innerHTML=homeHTML();
+else if(S.screen==="ynSetup") a.innerHTML=ynSetupHTML();
+else if(S.screen==="ynPick") a.innerHTML=ynPickHTML();
+else if(S.screen==="ynResult") a.innerHTML=ynResultHTML();
+else if(S.screen==="intro") a.innerHTML=introHTML();
+else if(S.screen==="picking") a.innerHTML=pickHTML();
+else a.innerHTML=readHTML();
+bindAll()
+}
 
+/* ========== HOME ========== */
+function homeHTML(){
+return '<div class="screen" style="align-items:center;justify-content:center;padding:24px">'+
+'<div style="text-align:center;max-width:400px;width:100%">'+
+'<div style="font-size:72px;margin-bottom:12px;animation:float 4s ease-in-out infinite">\ud83d\udd2e'+D+
+'<h1 style="font-size:38px;color:#8B6914;margin:0 0 8px;letter-spacing:4px;font-weight:400">TAROT'+H1+
+'<p style="font-size:14px;color:#9a8b78;margin:0 0 40px;letter-spacing:2px">\uce74\ub4dc\uac00 \ub2f9\uc2e0\uc5d0\uac8c \ub9d0\uc744 \uac78\uc5b4\uc635\ub2c8\ub2e4'+P+
+
+'<div style="display:flex;flex-direction:column;gap:16px;margin-bottom:32px">'+
+
+'<div class="mode-btn" id="modeYN">'+
+'<div style="font-size:36px;margin-bottom:8px">\u2728'+D+
+'<div style="font-size:20px;color:#8B6914;font-weight:400;margin-bottom:6px">Yes or No'+D+
+'<div style="font-size:13px;color:#9a8b78;line-height:1.6">\uac04\ub2e8\ud55c \uc9c8\ubb38\uc5d0 \ub300\ud55c \ub2f5<br>\uba54\uc774\uc800 \uc544\ub974\uce74\ub098 1~3\uc7a5'+D+
+D+
+
+'<div class="mode-btn" id="modeCeltic">'+
+'<div style="font-size:36px;margin-bottom:8px">\ud83c\udf1f'+D+
+'<div style="font-size:20px;color:#8B6914;font-weight:400;margin-bottom:6px">\ub2e4\uc591\ud55c \uc9c8\ubb38\uc6a9'+D+
+'<div style="font-size:13px;color:#9a8b78;line-height:1.6">\ucf08\ud2f1 \ud06c\ub85c\uc2a4 10\uc7a5 \uc2a4\ud504\ub808\ub4dc<br>\uc0c1\ud669\uc744 \uae4a\uc774 \ud0d0\uad6c\ud569\ub2c8\ub2e4'+D+
+D+
+
+D+
+'<p style="color:#9a8b7860;font-size:12px">\uacb0\uacfc\ub97c \ubcf5\uc0ac\ud574 Claude\uc5d0\uc11c \uc2ec\uce35 \ud574\uc11d\uc744 \ubc1b\uc744 \uc218 \uc788\uc5b4\uc694'+P+
+D+D
+}
+
+/* ========== YES/NO SETUP ========== */
+function ynSetupHTML(){
+return '<div class="screen" style="align-items:center;justify-content:center;padding:24px">'+
+'<div style="text-align:center;max-width:380px;width:100%">'+
+'<div style="font-size:56px;margin-bottom:16px">\u2728'+D+
+'<h2 style="font-size:26px;color:#8B6914;margin:0 0 8px;font-weight:400">Yes or No \ud0c0\ub85c'+H2+
+'<p style="font-size:14px;color:#9a8b78;margin:0 0 28px">\ub9c8\uc74c\uc18d \uc9c8\ubb38\uc744 \ub5a0\uc62c\ub9ac\uc138\uc694'+P+
+'<div style="background:#f5eedf;border:1px solid #8B691420;border-radius:16px;padding:20px 24px;margin-bottom:24px">'+
+'<input id="ynQIn" value="'+esc(S.q)+'" placeholder="\uc9c8\ubb38\uc744 \uc785\ub825\ud558\uc138\uc694 (\uc120\ud0dd\uc0ac\ud56d)" style="width:100%;padding:13px 16px;font-size:15px;background:#fff;border:1px solid #8B691430;border-radius:10px;color:#3d3426;outline:none;box-sizing:border-box"/>'+
+D+
+'<p style="font-size:15px;color:#6b5d4d;margin:0 0 14px">\uba87 \uc7a5\uc744 \ubf51\uc744\uae4c\uc694?'+P+
+'<div style="display:flex;gap:10px;margin-bottom:24px">'+
+'<button data-yncnt="1" style="flex:1;padding:16px;font-size:18px;background:'+(S.ynCnt===1?'linear-gradient(135deg,#c9a84c,#8B6914);color:#fff':'#fff;color:#8B6914')+';border:'+(S.ynCnt===1?'none':'1px solid #8B691430')+';border-radius:12px;cursor:pointer;font-weight:400">1\uc7a5'+BTN+
+'<button data-yncnt="2" style="flex:1;padding:16px;font-size:18px;background:'+(S.ynCnt===2?'linear-gradient(135deg,#c9a84c,#8B6914);color:#fff':'#fff;color:#8B6914')+';border:'+(S.ynCnt===2?'none':'1px solid #8B691430')+';border-radius:12px;cursor:pointer;font-weight:400">2\uc7a5'+BTN+
+'<button data-yncnt="3" style="flex:1;padding:16px;font-size:18px;background:'+(S.ynCnt===3?'linear-gradient(135deg,#c9a84c,#8B6914);color:#fff':'#fff;color:#8B6914')+';border:'+(S.ynCnt===3?'none':'1px solid #8B691430')+';border-radius:12px;cursor:pointer;font-weight:400">3\uc7a5'+BTN+
+D+
+'<button id="ynStartBtn" style="padding:16px 52px;font-size:18px;font-weight:400;background:linear-gradient(135deg,#c9a84c,#8B6914);color:#fff;border:none;border-radius:50px;cursor:pointer;box-shadow:0 4px 20px rgba(139,105,20,.2);letter-spacing:3px;margin-bottom:16px">\uce74\ub4dc \uc11e\uae30'+BTN+
+'<br><button id="ynBackBtn" style="background:none;border:none;color:#9a8b78;font-size:14px;cursor:pointer;text-decoration:underline">\u2190 \ub3cc\uc544\uac00\uae30'+BTN+
+D+D
+}
+
+/* ========== YES/NO PICK ========== */
+function ynPickHTML(){
+var cnt=S.ynPicked.length;
+var h='<div class="screen"><div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #8B691415;background:#fff">'+
+'<button id="ynBack2" style="background:none;border:1px solid #8B691440;color:#8B6914;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px">\u2190 \ub3cc\uc544\uac00\uae30'+BTN+
+'<span style="color:#8B6914;font-size:16px;font-weight:600">'+cnt+' / '+S.ynCnt+SP+D;
+if(S.q) h+='<div style="padding:10px 20px;text-align:center;color:#6b5d4d;font-size:14px;font-style:italic;border-bottom:1px solid #8B691408">\u201c'+esc(S.q)+'\u201d'+D;
+h+='<div style="text-align:center;padding:18px 20px 12px"><p style="color:#8B6914;font-size:19px;margin:0 0 6px;font-weight:400">\uba54\uc774\uc800 \uc544\ub974\uce74\ub098 22\uc7a5\uc5d0\uc11c \uace8\ub77c\uc8fc\uc138\uc694'+P+
+'<p style="color:#6b5d4d;font-size:14px;margin:0">\ub9c8\uc74c\uc774 \uc774\ub044\ub294 \uce74\ub4dc\ub97c \ud130\uce58\ud558\uc138\uc694'+P+D;
+if(cnt>0){
+h+='<div style="display:flex;gap:8px;justify-content:center;padding:10px 16px">';
+S.ynPicked.forEach(function(c){h+=makeCard(c.card,c.reversed,true,"md",null)});
+h+=D
+}
+h+='<div style="flex:1;padding:12px 12px 24px;overflow-y:auto"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;max-width:440px;margin:0 auto">';
+S.ynDeck.forEach(function(_,i){
+var pk=S.ynPI.indexOf(i)!==-1;
+h+='<div class="pick-card'+(pk?" picked":"")+'" style="width:48px;height:68px" data-ynpick="'+i+'">'+(pk?'':'<span style="color:#c9a84c60;font-size:12px">\u2726'+SP)+D
+});
+h+=D+D+D;
+return h
+}
+
+/* ========== YES/NO RESULT ========== */
+function ynResultHTML(){
+var h='<div class="screen" style="align-items:center;padding:24px">'+
+'<div style="text-align:center;max-width:420px;width:100%;padding-top:20px">';
+if(S.q) h+='<p style="color:#6b5d4d;font-size:16px;font-style:italic;margin:0 0 24px">\u201c'+esc(S.q)+'\u201d'+P;
+
+// Cards
+h+='<div style="display:flex;gap:16px;justify-content:center;margin-bottom:28px;flex-wrap:wrap">';
+S.ynPicked.forEach(function(c,i){
+var yn=c.reversed?(c.card.yn==="yes"?"no":c.card.yn==="no"?"yes":c.card.yn):c.card.yn;
+var ynColor=yn==="yes"?"#27ae60":yn==="no"?"#c0392b":"#c9a84c";
+var ynLabel=yn==="yes"?"YES":yn==="no"?"NO":"WAIT";
+h+='<div style="text-align:center;animation:slideUp .5s ease '+(i*.2)+'s both">';
+h+=makeCard(c.card,c.reversed,true,"lg",null);
+h+='<div style="margin-top:10px;font-size:22px;font-weight:700;color:'+ynColor+';letter-spacing:3px">'+ynLabel+D;
+h+='<div style="margin-top:4px;font-size:12px;color:#9a8b78;max-width:120px;line-height:1.4">'+(c.reversed?'\uc5ed\ubc29\ud5a5':c.card.ynMsg)+D;
+h+=D
+});
+h+=D;
+
+// Summary
+var yeses=0,nos=0,waits=0;
+S.ynPicked.forEach(function(c){
+var yn=c.reversed?(c.card.yn==="yes"?"no":c.card.yn==="no"?"yes":c.card.yn):c.card.yn;
+if(yn==="yes")yeses++;else if(yn==="no")nos++;else waits++
+});
+if(S.ynPicked.length>1){
+var verdict=yeses>nos?"\ud83d\udc9a \uc804\uccb4\uc801\uc73c\ub85c YES\uc758 \uc5d0\ub108\uc9c0\uac00 \uac15\ud569\ub2c8\ub2e4":nos>yeses?"\u2764\ufe0f \uc804\uccb4\uc801\uc73c\ub85c NO\uc758 \uc5d0\ub108\uc9c0\uac00 \uac15\ud569\ub2c8\ub2e4":"\ud83d\udca0 \uc544\uc9c1 \ud655\uc2e4\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \uc2dc\uac04\uc744 \ub450\uc138\uc694.";
+h+='<div style="background:#f5eedf;border:1px solid #8B691420;border-radius:14px;padding:16px 20px;margin-bottom:24px;font-size:16px;color:#3d3426;line-height:1.6">'+verdict+D
+}
+
+// Copy button
+h+='<button id="ynCopyBtn" style="width:100%;padding:18px;font-size:17px;background:'+(S.copied?'linear-gradient(135deg,#27ae60,#2ecc71)':'linear-gradient(135deg,#c9a84c,#8B6914)')+';color:#fff;border:none;border-radius:14px;cursor:pointer;letter-spacing:1px;font-weight:400;box-shadow:0 4px 20px rgba(139,105,20,.2);transition:background .3s">'+(S.copied?'\u2705 \ubcf5\uc0ac \uc644\ub8cc! Claude\uc5d0 \ubd99\uc5ec\ub123\uae30 \ud558\uc138\uc694':'\ud83d\udccb \uacb0\uacfc \ubcf5\uc0ac\ud558\uae30 (Claude\uc5d0 \ubd99\uc5ec\ub123\uae30\uc6a9)')+BTN;
+h+='<p style="color:#9a8b78;font-size:12px;text-align:center;margin:10px 0 0;line-height:1.6">\ubcf5\uc0ac\ud55c \uacb0\uacfc\ub97c <a href="https://claude.ai" target="_blank" style="color:#8B6914">claude.ai'+A+'\uc5d0 \ubd99\uc5ec\ub123\uc73c\uba74<br>\uc0c1\ud669\uc5d0 \ub9de\ub294 \uc2ec\uce35 \ud574\uc11d\uc744 \ubc1b\uc744 \uc218 \uc788\uc5b4\uc694'+P;
+
+h+='<div style="display:flex;gap:10px;margin-top:20px">'+
+'<button id="ynAgain" style="flex:1;padding:14px;background:none;border:1px solid #8B691425;color:#8B6914;border-radius:12px;cursor:pointer;font-size:14px">\ub2e4\uc2dc \ubf51\uae30'+BTN+
+'<button id="ynHome" style="flex:1;padding:14px;background:none;border:1px solid #8B691425;color:#9a8b78;border-radius:12px;cursor:pointer;font-size:14px">\uba54\uc778\uc73c\ub85c'+BTN+
+D;
+
+h+=D+D;
+return h
+}
+
+function ynFmtText(){
+var t="\u2728 Yes or No \ud0c0\ub85c \ub9ac\ub529 \uacb0\uacfc\n";
+if(S.q) t+="\uc9c8\ubb38: "+S.q+"\n";
+t+="\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n";
+S.ynPicked.forEach(function(c,i){
+var yn=c.reversed?(c.card.yn==="yes"?"no":c.card.yn==="no"?"yes":c.card.yn):c.card.yn;
+var label=yn==="yes"?"YES":yn==="no"?"NO":"WAIT";
+t+=(i+1)+". "+c.card.sym+" "+c.card.kr+" ("+(c.reversed?"\uc5ed\ubc29\ud5a5":"\uc815\ubc29\ud5a5")+") \u2192 "+label+"\n";
+t+="   "+c.card.ynMsg+"\n"
+});
+t+="\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\uc774 \ud0c0\ub85c \uacb0\uacfc\ub97c \uc2ec\uce35 \ud574\uc11d\ud574\uc8fc\uc138\uc694!";
+return t
+}
+
+/* ========== CELTIC CROSS INTRO ========== */
 function introHTML(){
 return '<div class="screen" style="align-items:center;justify-content:center;padding:24px">'+
 '<div style="text-align:center;max-width:380px">'+
-'<div style="font-size:72px;margin-bottom:12px;animation:float 4s ease-in-out infinite">\ud83d\udd2e'+D+
-'<h1 style="font-size:38px;color:#8B6914;margin:0 0 8px;letter-spacing:4px;font-weight:400">TAROT'+H1+
-'<p style="font-size:15px;color:#9a8b78;margin:0 0 6px;letter-spacing:6px">CELTIC CROSS'+P+
-'<p style="font-size:14px;color:#9a8b78;margin:0 0 36px">\uce74\ub4dc\ub97c \ubf51\uace0, \uacb0\uacfc\ub97c \ubcf5\uc0ac\ud574 \uc2ec\uce35 \ud574\uc11d\uc744 \ubc1b\uc73c\uc138\uc694'+P+
+'<div style="font-size:56px;margin-bottom:16px">\ud83c\udf1f'+D+
+'<h2 style="font-size:26px;color:#8B6914;margin:0 0 8px;font-weight:400">\ucf08\ud2f1 \ud06c\ub85c\uc2a4 \ud0c0\ub85c'+H2+
+'<p style="font-size:14px;color:#9a8b78;margin:0 0 28px">78\uc7a5\uc5d0\uc11c 10\uc7a5\uc744 \ubf51\uc544 \uc0c1\ud669\uc744 \uae4a\uc774 \ud0d0\uad6c\ud569\ub2c8\ub2e4'+P+
 '<div style="background:#f5eedf;border:1px solid #8B691420;border-radius:16px;padding:20px 24px;margin-bottom:28px">'+
 '<p style="font-size:15px;color:#6b5d4d;margin:0 0 14px;line-height:1.7">\ub9c8\uc74c\uc18d \uc9c8\ubb38\uc744 \ub5a0\uc62c\ub9ac\uace0<br>78\uc7a5 \uc911 10\uc7a5\uc744 \uc9c1\uc811 \uace8\ub77c\ubcf4\uc138\uc694'+P+
 '<input id="qIn" value="'+esc(S.q)+'" placeholder="\uc9c8\ubb38\uc744 \uc785\ub825\ud558\uc138\uc694 (\uc120\ud0dd\uc0ac\ud56d)" style="width:100%;padding:13px 16px;font-size:15px;background:#fff;border:1px solid #8B691430;border-radius:10px;color:#3d3426;outline:none;box-sizing:border-box"/>'+
 D+
-'<button id="startBtn" style="padding:16px 52px;font-size:18px;font-weight:400;background:linear-gradient(135deg,#c9a84c,#8B6914);color:#fff;border:none;border-radius:50px;cursor:pointer;box-shadow:0 4px 20px rgba(139,105,20,.2);letter-spacing:3px">\uce74\ub4dc \uc11e\uae30'+BTN+
-'<div style="margin-top:32px;padding:14px 20px;background:#8B691408;border-radius:12px;border:1px solid #8B691410">'+
-'<p style="color:#9a8b78;font-size:13px;margin:0;line-height:1.7">\u2460 \uce74\ub4dc\ub97c \uc9c1\uc811 \ubf51\uc544 \ucf08\ud2f1 \ud06c\ub85c\uc2a4 \ubc30\uce58<br>\u2461 \ubc84\ud2bc \ud55c \ubc88\uc73c\ub85c \uacb0\uacfc\ub97c \ubcf5\uc0ac<br>\u2462 Claude\uc5d0 \ubd99\uc5ec\ub123\uc5b4 \uc2ec\uce35 \ud574\uc11d \ubc1b\uae30'+P+
-D+D+D
+'<button id="startBtn" style="padding:16px 52px;font-size:18px;font-weight:400;background:linear-gradient(135deg,#c9a84c,#8B6914);color:#fff;border:none;border-radius:50px;cursor:pointer;box-shadow:0 4px 20px rgba(139,105,20,.2);letter-spacing:3px;margin-bottom:16px">\uce74\ub4dc \uc11e\uae30'+BTN+
+'<br><button id="ccBackBtn" style="background:none;border:none;color:#9a8b78;font-size:14px;cursor:pointer;text-decoration:underline">\u2190 \ub3cc\uc544\uac00\uae30'+BTN+
+D+D
 }
 
+/* ========== CELTIC CROSS PICK / READ (same as before) ========== */
 function pickHTML(){
 var cnt=S.pickedCards.length,np=cnt<10?POS[cnt]:null;
 var h='<div class="screen"><div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #8B691415;background:#fff">'+
@@ -116,21 +264,13 @@ else h+='<p style="color:#8B6914;font-size:18px;margin:0">\ubaa8\ub4e0 \uce74\ub
 h+=D;
 if(cnt>0){
 h+='<div style="padding:0 16px 10px;display:flex;gap:5px;justify-content:center;flex-wrap:wrap">';
-S.pickedCards.forEach(function(c,i){
-var isMaj=c.card.type==="major";
-var bc=isMaj?"#8B6914":(c.card.suit?c.card.suit.color:"#666");
-h+='<div style="width:34px;height:48px;border-radius:6px;background:'+(isMaj?"linear-gradient(180deg,#fdf6e3,#ede0c8)":"linear-gradient(180deg,#faf8f5,#f0ece4)")+';border:1.5px solid '+bc+'50;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:cardAppear .4s ease"><span style="font-size:13px">'+c.card.sym+SP+'<span style="font-size:7px;color:#8B6914;font-weight:700">'+(i+1)+SP+D
-});
-h+=D
-}
+S.pickedCards.forEach(function(c,i){var isMaj=c.card.type==="major";var bc=isMaj?"#8B6914":(c.card.suit?c.card.suit.color:"#666");
+h+='<div style="width:34px;height:48px;border-radius:6px;background:'+(isMaj?"linear-gradient(180deg,#fdf6e3,#ede0c8)":"linear-gradient(180deg,#faf8f5,#f0ece4)")+';border:1.5px solid '+bc+'50;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:cardAppear .4s ease"><span style="font-size:13px">'+c.card.sym+SP+'<span style="font-size:7px;color:#8B6914;font-weight:700">'+(i+1)+SP+D});
+h+=D}
 h+='<div style="flex:1;padding:12px 12px 24px;overflow-y:auto"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px;max-width:440px;margin:0 auto">';
-S.deck.forEach(function(_,i){
-var pk=S.picked.indexOf(i)!==-1;
-h+='<div class="pick-card'+(pk?" picked":"")+'" data-pick="'+i+'">'+(pk?'':'<span style="color:#c9a84c60;font-size:10px">\u2726'+SP)+D
-});
-h+=D+D+D;
-return h
-}
+S.deck.forEach(function(_,i){var pk=S.picked.indexOf(i)!==-1;
+h+='<div class="pick-card'+(pk?" picked":"")+'" data-pick="'+i+'">'+(pk?'':'<span style="color:#c9a84c60;font-size:10px">\u2726'+SP)+D});
+h+=D+D+D;return h}
 
 function makeCard(card,rev,flipped,size,posLabel){
 var sz={sm:{w:52,h:82,e:18,t:8,n:7},md:{w:72,h:112,e:28,t:10,n:9},lg:{w:90,h:140,e:36,t:12,n:11}}[size];
@@ -145,9 +285,7 @@ h+='<div style="font-size:'+sz.t+'px;font-weight:700;color:#2c2c2c;text-align:ce
 if(isMaj) h+='<div style="font-size:'+(sz.n-2)+'px;color:#88776640;margin-top:1px">Major'+D;
 else if(card.suit) h+='<div style="font-size:'+(sz.n-2)+'px;color:'+card.suit.color+'80;margin-top:1px">'+card.suit.kr+D;
 if(rev) h+='<div style="position:absolute;bottom:3px;font-size:'+(sz.n-2)+'px;color:#c0392b;font-weight:700;'+(rev?'transform:rotate(180deg)':'')+'">\uc5ed\ubc29\ud5a5'+D;
-h+=D+D;
-return h
-}
+h+=D+D;return h}
 
 function readHTML(){
 var h='<div class="screen"><div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #8B691415;background:#fff">'+
@@ -158,163 +296,96 @@ else h+='<div style="width:80px">'+D;
 h+=D;
 if(S.q) h+='<div style="padding:10px 20px;text-align:center;color:#6b5d4d;font-size:14px;font-style:italic;border-bottom:1px solid #8B691408">\u201c'+esc(S.q)+'\u201d'+D;
 if(!S.allRev) h+='<div style="text-align:center;padding:12px 16px"><p style="color:#6b5d4d;font-size:14px;margin:0">'+(S.flipOrd<10?(S.flipOrd+1)+'\ubc88 \uce74\ub4dc\ub97c \ud130\uce58\ud558\uc5ec \uacf5\uac1c \u2014 '+POS[S.flipOrd].kr:'\ubaa8\ub4e0 \uce74\ub4dc\uac00 \uacf5\uac1c\ub418\uc5c8\uc2b5\ub2c8\ub2e4')+P+D;
-
 h+='<div style="padding:8px 12px"><div style="position:relative;width:100%;max-width:400px;aspect-ratio:1/1.05;margin:0 auto">';
-for(var i=0;i<S.cards.length&&i<10;i++){
-var c=S.cards[i],isF=S.flipped.indexOf(i)!==-1,isS=S.sel===i;
-var zI=isS?20:(i===1?5:i===0?4:1);
-var p=LP[i];
+for(var i=0;i<S.cards.length&&i<10;i++){var c=S.cards[i],isF=S.flipped.indexOf(i)!==-1,isS=S.sel===i;var zI=isS?20:(i===1?5:i===0?4:1);var p=LP[i];
 h+='<div data-cpos="'+i+'" style="position:absolute;left:'+p.left+'%;top:'+p.top+'%;transform:rotate('+p.r+'deg)'+(isS?' scale(1.15)':'')+';transition:transform .3s;z-index:'+zI+';cursor:pointer;'+(isS?'filter:drop-shadow(0 0 10px #c9a84c80)':'')+'">';
-h+=makeCard(c.card,c.reversed,isF,"md",isF?POS[i].label:null);
-h+=D
-}
+h+=makeCard(c.card,c.reversed,isF,"md",isF?POS[i].label:null);h+=D}
 h+=D+D;
-
-if(S.sel!==null&&S.cards[S.sel]){
-var sc=S.cards[S.sel];
-h+='<div style="background:#fff;border-top:1px solid #8B691420;padding:20px 20px 28px;animation:slideUp .4s ease">';
-h+='<div style="display:flex;align-items:flex-start;gap:16px">';
+if(S.sel!==null&&S.cards[S.sel]){var sc=S.cards[S.sel];
+h+='<div style="background:#fff;border-top:1px solid #8B691420;padding:20px 20px 28px;animation:slideUp .4s ease"><div style="display:flex;align-items:flex-start;gap:16px">';
 h+=makeCard(sc.card,sc.reversed,true,"lg",null);
-h+='<div style="flex:1">'+
-'<div style="font-size:11px;color:#c9a84c;letter-spacing:2px;margin-bottom:4px">POSITION '+(S.sel+1)+D+
-'<div style="font-size:19px;color:#8B6914;font-weight:400;margin-bottom:4px">'+POS[S.sel].kr+D+
-'<div style="font-size:13px;color:#9a8b78;margin-bottom:10px;line-height:1.5">'+POS[S.sel].desc+D+
-'<div style="font-size:18px;color:#3d3426;font-weight:400;margin-bottom:4px">'+sc.card.kr+(sc.reversed?'<span style="color:#c0392b;font-size:13px"> (\uc5ed\ubc29\ud5a5)'+SP:'')+D+
-'<div style="font-size:12px;color:#9a8b78">'+sc.card.name+D+
-'<div style="font-size:12px;color:#9a8b78;margin-top:4px">'+(sc.card.type==="major"?"\uba54\uc774\uc800 \uc544\ub974\uce74\ub098":sc.card.suit.kr+" \xb7 \ub9c8\uc774\ub108 \uc544\ub974\uce74\ub098")+D+
-D+D;
-h+='<button id="closeDetail" style="margin-top:14px;width:100%;padding:12px;background:#f5eedf;border:1px solid #8B691420;color:#8B6914;border-radius:12px;cursor:pointer;font-size:14px">\ub2eb\uae30'+BTN;
-h+=D
-}
-
+h+='<div style="flex:1"><div style="font-size:11px;color:#c9a84c;letter-spacing:2px;margin-bottom:4px">POSITION '+(S.sel+1)+D+'<div style="font-size:19px;color:#8B6914;font-weight:400;margin-bottom:4px">'+POS[S.sel].kr+D+'<div style="font-size:13px;color:#9a8b78;margin-bottom:10px;line-height:1.5">'+POS[S.sel].desc+D+'<div style="font-size:18px;color:#3d3426;font-weight:400;margin-bottom:4px">'+sc.card.kr+(sc.reversed?'<span style="color:#c0392b;font-size:13px"> (\uc5ed\ubc29\ud5a5)'+SP:'')+D+'<div style="font-size:12px;color:#9a8b78">'+sc.card.name+D+'<div style="font-size:12px;color:#9a8b78;margin-top:4px">'+(sc.card.type==="major"?"\uba54\uc774\uc800 \uc544\ub974\uce74\ub098":sc.card.suit.kr+" \xb7 \ub9c8\uc774\ub108 \uc544\ub974\uce74\ub098")+D+D+D;
+h+='<button id="closeDetail" style="margin-top:14px;width:100%;padding:12px;background:#f5eedf;border:1px solid #8B691420;color:#8B6914;border-radius:12px;cursor:pointer;font-size:14px">\ub2eb\uae30'+BTN+D}
 if(S.allRev&&S.sel===null){
 h+='<div style="padding:16px 20px 28px;border-top:1px solid #8B691410">';
 h+='<p style="color:#6b5d4d;font-size:15px;text-align:center;margin-bottom:16px">\uce74\ub4dc\ub97c \ud130\uce58\ud558\uc5ec \uac1c\ubcc4 \ud655\uc778\ud558\uc138\uc694'+P;
 h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">';
-S.cards.forEach(function(c,i){
-h+='<div class="summary-card" data-sum="'+i+'"><div style="font-size:11px;color:#9a8b78;margin-bottom:2px">'+POS[i].label+'. '+POS[i].kr+D+'<div style="font-size:14px;color:#3d3426">'+c.card.sym+' '+c.card.kr+(c.reversed?'<span style="color:#c0392b;font-size:11px"> \u21ba'+SP:'')+D+D
-});
+S.cards.forEach(function(c,i){h+='<div class="summary-card" data-sum="'+i+'"><div style="font-size:11px;color:#9a8b78;margin-bottom:2px">'+POS[i].label+'. '+POS[i].kr+D+'<div style="font-size:14px;color:#3d3426">'+c.card.sym+' '+c.card.kr+(c.reversed?'<span style="color:#c0392b;font-size:11px"> \u21ba'+SP:'')+D+D});
 h+=D;
 h+='<button id="copyBtn" style="width:100%;padding:18px;font-size:17px;background:'+(S.copied?'linear-gradient(135deg,#27ae60,#2ecc71)':'linear-gradient(135deg,#c9a84c,#8B6914)')+';color:#fff;border:none;border-radius:14px;cursor:pointer;letter-spacing:1px;font-weight:400;box-shadow:0 4px 20px rgba(139,105,20,.2);transition:background .3s">'+(S.copied?'\u2705 \ubcf5\uc0ac \uc644\ub8cc! Claude\uc5d0 \ubd99\uc5ec\ub123\uae30 \ud558\uc138\uc694':'\ud83d\udccb \uacb0\uacfc \ubcf5\uc0ac\ud558\uae30 (Claude\uc5d0 \ubd99\uc5ec\ub123\uae30\uc6a9)')+BTN;
 h+='<p style="color:#9a8b78;font-size:12px;text-align:center;margin:10px 0 0;line-height:1.6">\ubcf5\uc0ac\ud55c \uacb0\uacfc\ub97c <a href="https://claude.ai" target="_blank" style="color:#8B6914">claude.ai'+A+'\uc5d0 \ubd99\uc5ec\ub123\uc73c\uba74<br>\uc0c1\ud669\uc5d0 \ub9de\ub294 \uc2ec\uce35 \ud574\uc11d\uc744 \ubc1b\uc744 \uc218 \uc788\uc5b4\uc694'+P;
-
 h+='<div style="text-align:center;margin-top:12px"><button id="toggleTxt" style="background:none;border:none;color:#9a8b78;font-size:12px;cursor:pointer;text-decoration:underline">'+(S.showTxt?'\uacb0\uacfc \ud14d\uc2a4\ud2b8 \uc811\uae30':'\uacb0\uacfc \ud14d\uc2a4\ud2b8 \uc9c1\uc811 \ubcf4\uae30 (\uc218\ub3d9 \ubcf5\uc0ac)')+BTN+D;
 if(S.showTxt) h+='<textarea readonly id="resultTxt" style="width:100%;margin-top:8px;padding:14px;font-size:12px;font-family:monospace;background:#f5eedf;border:1px solid #8B691420;border-radius:10px;color:#3d3426;resize:none;box-sizing:border-box;line-height:1.6;min-height:200px;outline:none">'+esc(fmtText())+TA;
-
-S.followUps.forEach(function(fu,fi){
-h+='<div style="margin-top:20px;padding:16px;background:#fff;border-radius:14px;border:1px solid #8B691415;animation:slideUp .5s ease;box-shadow:0 1px 8px rgba(0,0,0,.04)">';
-h+='<div style="font-size:13px;color:#8B6914;font-weight:600;margin-bottom:10px">\ucd94\uac00 \uc9c8\ubb38 '+(fi+1)+': \u201c'+esc(fu.question)+'\u201d'+D;
-h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
-fu.cards.forEach(function(c){
-h+='<div style="display:flex;align-items:center;gap:8px">'+makeCard(c.card,c.reversed,true,"sm",null)+'<div><div style="font-size:13px;color:#3d3426;font-weight:600">'+c.card.kr+D+'<div style="font-size:11px;color:'+(c.reversed?'#c0392b':'#9a8b78')+'">'+(c.reversed?'\uc5ed\ubc29\ud5a5':'\uc815\ubc29\ud5a5')+D+D+D
-});
-h+=D+D
-});
-
-if(S.followMode){
-h+='<div style="margin-top:20px;padding:20px;background:#fff;border-radius:16px;border:1px solid #8B691415;animation:slideUp .4s ease">';
-h+='<div style="text-align:center;margin-bottom:16px"><p style="color:#8B6914;font-size:16px;margin:0 0 6px;font-weight:400">\u201c'+esc(S.followQ)+'\u201d'+P;
-h+='<p style="color:#6b5d4d;font-size:14px;margin:0 0 4px">\uba54\uc774\uc800 \uc544\ub974\uce74\ub098 22\uc7a5\uc5d0\uc11c '+S.followCnt+'\uc7a5\uc744 \uace8\ub77c\uc8fc\uc138\uc694'+P;
-h+='<p style="color:#9a8b78;font-size:13px;margin:0">'+S.followPicked.length+' / '+S.followCnt+P+D;
-if(S.followPicked.length>0){
-h+='<div style="display:flex;gap:6px;justify-content:center;margin-bottom:12px">';
-S.followPicked.forEach(function(c){h+=makeCard(c.card,c.reversed,true,"sm",null)});
-h+=D
-}
-h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px">';
-S.followDeck.forEach(function(_,i){
-var pk=S.followPI.indexOf(i)!==-1;
-h+='<div class="pick-card'+(pk?' picked':'')+'" data-fpick="'+i+'">'+(pk?'':'<span style="color:#c9a84c60;font-size:10px">\u2726'+SP)+D
-});
-h+=D+D
-}
-
-if(!S.followMode){
-h+='<div style="margin-top:20px;padding:20px;background:#fff;border-radius:16px;border:1px solid #8B691415">';
-h+='<p style="color:#8B6914;font-size:16px;margin:0 0 12px;font-weight:400;text-align:center">\u2726 \ucd94\uac00\ub85c \uce74\ub4dc\ub97c \ub354 \ubf51\uace0 \uc2f6\uc73c\uc2e0\uac00\uc694?'+P;
-h+='<p style="color:#9a8b78;font-size:12px;margin:0 0 14px;text-align:center">\uc9c8\ubb38\uc744 \uc785\ub825\ud558\uace0 \uba54\uc774\uc800 \uc544\ub974\uce74\ub098\uc5d0\uc11c \uce74\ub4dc\ub97c \ubf51\uc73c\uc138\uc694.<br>\ubf51\uc740 \ub4a4 \ub2e4\uc2dc \uacb0\uacfc\ub97c \ubcf5\uc0ac\ud558\uc5ec \ud574\uc11d\ubc1b\uc744 \uc218 \uc788\uc5b4\uc694'+P;
-h+='<input id="followIn" value="'+esc(S.followIn)+'" placeholder="\ucd94\uac00 \uc9c8\ubb38\uc744 \uc785\ub825\ud558\uc138\uc694..." style="width:100%;padding:13px 16px;font-size:15px;background:#f5eedf;border:1px solid #8B691420;border-radius:10px;color:#3d3426;outline:none;box-sizing:border-box;margin-bottom:10px"/>';
-h+='<div style="display:flex;gap:8px">';
-[1,2,3].forEach(function(n){
-h+='<button data-fstart="'+n+'" style="flex:1;padding:12px;font-size:14px;background:linear-gradient(135deg,#c9a84c,#8B6914);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:400">'+n+'\uc7a5 \ubf51\uae30'+BTN
-});
-h+=D+D
-}
-
-h+='<button id="newBtn" style="margin-top:20px;width:100%;padding:14px;background:none;border:1px solid #8B691425;color:#9a8b78;border-radius:12px;cursor:pointer;font-size:14px;letter-spacing:2px">\uc0c8\ub85c\uc6b4 \ub9ac\ub529 \uc2dc\uc791'+BTN;
-h+=D
-}
-h+=D;
-return h
-}
+S.followUps.forEach(function(fu,fi){h+='<div style="margin-top:20px;padding:16px;background:#fff;border-radius:14px;border:1px solid #8B691415;animation:slideUp .5s ease;box-shadow:0 1px 8px rgba(0,0,0,.04)"><div style="font-size:13px;color:#8B6914;font-weight:600;margin-bottom:10px">\ucd94\uac00 \uc9c8\ubb38 '+(fi+1)+': \u201c'+esc(fu.question)+'\u201d'+D+'<div style="display:flex;gap:8px;flex-wrap:wrap">';
+fu.cards.forEach(function(c){h+='<div style="display:flex;align-items:center;gap:8px">'+makeCard(c.card,c.reversed,true,"sm",null)+'<div><div style="font-size:13px;color:#3d3426;font-weight:600">'+c.card.kr+D+'<div style="font-size:11px;color:'+(c.reversed?'#c0392b':'#9a8b78')+'">'+(c.reversed?'\uc5ed\ubc29\ud5a5':'\uc815\ubc29\ud5a5')+D+D+D});
+h+=D+D});
+if(S.followMode){h+='<div style="margin-top:20px;padding:20px;background:#fff;border-radius:16px;border:1px solid #8B691415;animation:slideUp .4s ease"><div style="text-align:center;margin-bottom:16px"><p style="color:#8B6914;font-size:16px;margin:0 0 6px;font-weight:400">\u201c'+esc(S.followQ)+'\u201d'+P+'<p style="color:#6b5d4d;font-size:14px;margin:0 0 4px">\uba54\uc774\uc800 \uc544\ub974\uce74\ub098 22\uc7a5\uc5d0\uc11c '+S.followCnt+'\uc7a5\uc744 \uace8\ub77c\uc8fc\uc138\uc694'+P+'<p style="color:#9a8b78;font-size:13px;margin:0">'+S.followPicked.length+' / '+S.followCnt+P+D;
+if(S.followPicked.length>0){h+='<div style="display:flex;gap:6px;justify-content:center;margin-bottom:12px">';S.followPicked.forEach(function(c){h+=makeCard(c.card,c.reversed,true,"sm",null)});h+=D}
+h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px">';S.followDeck.forEach(function(_,i){var pk=S.followPI.indexOf(i)!==-1;h+='<div class="pick-card'+(pk?' picked':'')+'" data-fpick="'+i+'">'+(pk?'':'<span style="color:#c9a84c60;font-size:10px">\u2726'+SP)+D});h+=D+D}
+if(!S.followMode){h+='<div style="margin-top:20px;padding:20px;background:#fff;border-radius:16px;border:1px solid #8B691415"><p style="color:#8B6914;font-size:16px;margin:0 0 12px;font-weight:400;text-align:center">\u2726 \ucd94\uac00\ub85c \uce74\ub4dc\ub97c \ub354 \ubf51\uace0 \uc2f6\uc73c\uc2e0\uac00\uc694?'+P+'<p style="color:#9a8b78;font-size:12px;margin:0 0 14px;text-align:center">\uc9c8\ubb38\uc744 \uc785\ub825\ud558\uace0 \uba54\uc774\uc800 \uc544\ub974\uce74\ub098\uc5d0\uc11c \uce74\ub4dc\ub97c \ubf51\uc73c\uc138\uc694.'+P;
+h+='<input id="followIn" value="'+esc(S.followIn)+'" placeholder="\ucd94\uac00 \uc9c8\ubb38\uc744 \uc785\ub825\ud558\uc138\uc694..." style="width:100%;padding:13px 16px;font-size:15px;background:#f5eedf;border:1px solid #8B691420;border-radius:10px;color:#3d3426;outline:none;box-sizing:border-box;margin-bottom:10px"/><div style="display:flex;gap:8px">';
+[1,2,3].forEach(function(n){h+='<button data-fstart="'+n+'" style="flex:1;padding:12px;font-size:14px;background:linear-gradient(135deg,#c9a84c,#8B6914);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:400">'+n+'\uc7a5 \ubf51\uae30'+BTN});h+=D+D}
+h+='<button id="newBtn" style="margin-top:20px;width:100%;padding:14px;background:none;border:1px solid #8B691425;color:#9a8b78;border-radius:12px;cursor:pointer;font-size:14px;letter-spacing:2px">\uba54\uc778\uc73c\ub85c \ub3cc\uc544\uac00\uae30'+BTN;h+=D}
+h+=D;return h}
 
 function fmtText(){
-var t="\ud83d\udd2e \ucf08\ud2f1 \ud06c\ub85c\uc2a4 \ud0c0\ub85c \ub9ac\ub529 \uacb0\uacfc\n";
-if(S.q) t+="\uc9c8\ubb38: "+S.q+"\n";
+var t="\ud83d\udd2e \ucf08\ud2f1 \ud06c\ub85c\uc2a4 \ud0c0\ub85c \ub9ac\ub529 \uacb0\uacfc\n";if(S.q) t+="\uc9c8\ubb38: "+S.q+"\n";
 t+="\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n";
-S.cards.forEach(function(c,i){
-t+=POS[i].label+". "+POS[i].kr+": "+c.card.sym+" "+c.card.kr+" ("+(c.reversed?"\uc5ed\ubc29\ud5a5":"\uc815\ubc29\ud5a5")+") ["+(c.card.type==="major"?"\uba54\uc774\uc800":c.card.suit.kr)+"]\n"
-});
-if(S.followUps.length>0){
-t+="\n\u2500\u2500\u2500 \ucd94\uac00 \uc9c8\ubb38 \u2500\u2500\u2500\n";
-S.followUps.forEach(function(fu,fi){
-t+="\nQ"+(fi+1)+": "+fu.question+"\n";
-fu.cards.forEach(function(c){t+="  \u2192 "+c.card.sym+" "+c.card.kr+" ("+(c.reversed?"\uc5ed\ubc29\ud5a5":"\uc815\ubc29\ud5a5")+")\n"})
-})
-}
-t+="\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\uc774 \ud0c0\ub85c \uacb0\uacfc\ub97c \uc2ec\uce35 \ud574\uc11d\ud574\uc8fc\uc138\uc694!";
-return t
-}
+S.cards.forEach(function(c,i){t+=POS[i].label+". "+POS[i].kr+": "+c.card.sym+" "+c.card.kr+" ("+(c.reversed?"\uc5ed\ubc29\ud5a5":"\uc815\ubc29\ud5a5")+") ["+(c.card.type==="major"?"\uba54\uc774\uc800":c.card.suit.kr)+"]\n"});
+if(S.followUps.length>0){t+="\n\u2500\u2500\u2500 \ucd94\uac00 \uc9c8\ubb38 \u2500\u2500\u2500\n";S.followUps.forEach(function(fu,fi){t+="\nQ"+(fi+1)+": "+fu.question+"\n";fu.cards.forEach(function(c){t+="  \u2192 "+c.card.sym+" "+c.card.kr+" ("+(c.reversed?"\uc5ed\ubc29\ud5a5":"\uc815\ubc29\ud5a5")+")\n"})})}
+t+="\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\uc774 \ud0c0\ub85c \uacb0\uacfc\ub97c \uc2ec\uce35 \ud574\uc11d\ud574\uc8fc\uc138\uc694!";return t}
 
-function doCopy(){
-var text=fmtText();
+function doCopy(text){
+if(!text) text=S.mode==="yn"?ynFmtText():fmtText();
 try{navigator.clipboard.writeText(text).then(function(){S.copied=true;render();setTimeout(function(){S.copied=false;render()},2500)}).catch(fb)}catch(e){fb()}
 function fb(){var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.left="-9999px";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);S.copied=true;render();setTimeout(function(){S.copied=false;render()},2500)}
 }
 
+function goHome(){S.screen="home";S.mode="";S.q="";S.copied=false;render()}
+
 function bindAll(){
 var el;
+// Home
+if(el=document.getElementById("modeYN")) el.onclick=function(){S.mode="yn";S.screen="ynSetup";S.q="";S.ynCnt=1;render()};
+if(el=document.getElementById("modeCeltic")) el.onclick=function(){S.mode="celtic";S.screen="intro";S.q="";render()};
+// YN Setup
+if(el=document.getElementById("ynQIn")) el.oninput=function(){S.q=this.value};
+document.querySelectorAll("[data-yncnt]").forEach(function(e){e.onclick=function(){S.ynCnt=parseInt(this.getAttribute("data-yncnt"));render()}});
+if(el=document.getElementById("ynStartBtn")) el.onclick=function(){S.ynDeck=shuffle(MAJOR_DECK);S.ynPicked=[];S.ynPI=[];S.screen="ynPick";render()};
+if(el=document.getElementById("ynBackBtn")) el.onclick=goHome;
+if(el=document.getElementById("ynBack2")) el.onclick=function(){S.screen="ynSetup";render()};
+// YN Pick
+document.querySelectorAll("[data-ynpick]").forEach(function(e){e.onclick=function(){
+var idx=parseInt(this.getAttribute("data-ynpick"));
+if(S.ynPI.indexOf(idx)!==-1||S.ynPicked.length>=S.ynCnt) return;
+S.ynPI.push(idx);S.ynPicked.push({card:S.ynDeck[idx],reversed:Math.random()<.3});
+if(S.ynPicked.length>=S.ynCnt){render();setTimeout(function(){S.screen="ynResult";render()},600)}else render()
+}});
+// YN Result
+if(el=document.getElementById("ynCopyBtn")) el.onclick=function(){doCopy(ynFmtText())};
+if(el=document.getElementById("ynAgain")) el.onclick=function(){S.screen="ynSetup";S.copied=false;S.ynPicked=[];S.ynPI=[];render()};
+if(el=document.getElementById("ynHome")) el.onclick=goHome;
+// Celtic intro
 if(el=document.getElementById("qIn")) el.oninput=function(){S.q=this.value};
 if(el=document.getElementById("startBtn")) el.onclick=function(){S.deck=shuffle(DECK);S.picked=[];S.pickedCards=[];S.cards=[];S.flipped=[];S.sel=null;S.allRev=false;S.flipOrd=0;S.showTxt=false;S.copied=false;S.followUps=[];S.followIn="";S.followMode=false;S.followQ="";S.followDeck=[];S.followPicked=[];S.followPI=[];S.screen="picking";render()};
+if(el=document.getElementById("ccBackBtn")) el.onclick=goHome;
 if(el=document.getElementById("backBtn")) el.onclick=function(){S.screen="intro";render()};
 if(el=document.getElementById("resetBtn")) el.onclick=function(){S.screen="intro";S.q="";render()};
-if(el=document.getElementById("newBtn")) el.onclick=function(){S.screen="intro";S.q="";render()};
+if(el=document.getElementById("newBtn")) el.onclick=goHome;
 if(el=document.getElementById("flipAllBtn")) el.onclick=function(){var d=0;for(var i=S.flipOrd;i<10;i++){(function(ii){setTimeout(function(){S.flipped.push(ii);S.flipOrd=ii+1;if(ii===9)setTimeout(function(){S.allRev=true;render()},300);else render()},d)})(i);d+=250}};
 if(el=document.getElementById("closeDetail")) el.onclick=function(){S.sel=null;render()};
-if(el=document.getElementById("copyBtn")) el.onclick=doCopy;
+if(el=document.getElementById("copyBtn")) el.onclick=function(){doCopy(fmtText())};
 if(el=document.getElementById("toggleTxt")) el.onclick=function(){S.showTxt=!S.showTxt;render()};
 if(el=document.getElementById("resultTxt")) el.onfocus=function(){this.select()};
 if(el=document.getElementById("followIn")){el.oninput=function(){S.followIn=this.value};el.onkeydown=function(e){if(e.key==="Enter"&&S.followIn.trim())doFollow(1)}}
-
-document.querySelectorAll("[data-pick]").forEach(function(e){e.onclick=function(){
-var di=parseInt(this.getAttribute("data-pick"));
-if(S.picked.indexOf(di)!==-1||S.pickedCards.length>=10) return;
-S.picked.push(di);S.pickedCards.push({card:S.deck[di],reversed:Math.random()<.3});
-if(S.pickedCards.length===10){render();setTimeout(function(){S.cards=S.pickedCards.slice();S.screen="reading";render()},800)}else render()
-}});
-
-document.querySelectorAll("[data-cpos]").forEach(function(e){e.onclick=function(){
-var i=parseInt(this.getAttribute("data-cpos"));
-if(S.flipped.indexOf(i)===-1){if(i===S.flipOrd){S.flipped.push(i);S.flipOrd++;if(S.flipOrd===10)setTimeout(function(){S.allRev=true;render()},600);else render()}}
-else{S.sel=S.sel===i?null:i;render()}
-}});
-
+document.querySelectorAll("[data-pick]").forEach(function(e){e.onclick=function(){var di=parseInt(this.getAttribute("data-pick"));if(S.picked.indexOf(di)!==-1||S.pickedCards.length>=10)return;S.picked.push(di);S.pickedCards.push({card:S.deck[di],reversed:Math.random()<.3});if(S.pickedCards.length===10){render();setTimeout(function(){S.cards=S.pickedCards.slice();S.screen="reading";render()},800)}else render()}});
+document.querySelectorAll("[data-cpos]").forEach(function(e){e.onclick=function(){var i=parseInt(this.getAttribute("data-cpos"));if(S.flipped.indexOf(i)===-1){if(i===S.flipOrd){S.flipped.push(i);S.flipOrd++;if(S.flipOrd===10)setTimeout(function(){S.allRev=true;render()},600);else render()}}else{S.sel=S.sel===i?null:i;render()}}});
 document.querySelectorAll("[data-sum]").forEach(function(e){e.onclick=function(){S.sel=parseInt(this.getAttribute("data-sum"));render()}});
 document.querySelectorAll("[data-fstart]").forEach(function(e){e.onclick=function(){doFollow(parseInt(this.getAttribute("data-fstart")))}});
-document.querySelectorAll("[data-fpick]").forEach(function(e){e.onclick=function(){
-var idx=parseInt(this.getAttribute("data-fpick"));
-if(S.followPI.indexOf(idx)!==-1||S.followPicked.length>=S.followCnt) return;
-S.followPI.push(idx);S.followPicked.push({card:S.followDeck[idx],reversed:Math.random()<.3});
-if(S.followPicked.length>=S.followCnt){setTimeout(function(){S.followUps.push({question:S.followQ,cards:S.followPicked.slice()});S.followMode=false;S.followPicked=[];S.followPI=[];S.followDeck=[];S.showTxt=false;render()},600)}else render()
-}});
+document.querySelectorAll("[data-fpick]").forEach(function(e){e.onclick=function(){var idx=parseInt(this.getAttribute("data-fpick"));if(S.followPI.indexOf(idx)!==-1||S.followPicked.length>=S.followCnt)return;S.followPI.push(idx);S.followPicked.push({card:S.followDeck[idx],reversed:Math.random()<.3});if(S.followPicked.length>=S.followCnt){setTimeout(function(){S.followUps.push({question:S.followQ,cards:S.followPicked.slice()});S.followMode=false;S.followPicked=[];S.followPI=[];S.followDeck=[];S.showTxt=false;render()},600)}else render()}});
 }
 
-function doFollow(n){
-if(!S.followIn.trim()) return;
-S.followQ=S.followIn.trim();S.followIn="";S.followCnt=n;
-S.followDeck=shuffle(DECK.filter(function(c){return c.type==="major"}));
-S.followPicked=[];S.followPI=[];S.followMode=true;render()
-}
+function doFollow(n){if(!S.followIn.trim())return;S.followQ=S.followIn.trim();S.followIn="";S.followCnt=n;S.followDeck=shuffle(MAJOR_DECK);S.followPicked=[];S.followPI=[];S.followMode=true;render()}
 
 render();
 </script>
